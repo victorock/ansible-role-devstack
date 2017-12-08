@@ -1,0 +1,6 @@
+devstack_install_packages:
+  - git
+
+devstack_stop_services:
+  - firewalld
+  - iptables

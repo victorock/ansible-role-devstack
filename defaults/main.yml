@@ -1,0 +1,5 @@
+---
+devstack_dir: "/var/tmp/devstack"
+devstack_user: "stack"
+devstack_version: "stable/pike"
+devstack_password: changeme

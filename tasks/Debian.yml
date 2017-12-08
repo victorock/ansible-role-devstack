@@ -1,0 +1,20 @@
+- name: "Debian: Install dependencies"
+  become: yes
+  apt:
+    name: "{{ debian_package }}"
+    state: installed
+    update_cache: yes
+  with_items: "{{ devstack_install_packages }}"
+  loop_control:
+    loop_var: debian_package
+    label: "debian_package {{ debian_package }}"
+
+- name: "Debian: Stop unecessary services"
+  become: yes
+  service:
+    name: "{{ debian_stop_service }}"
+    state: 'stopped'
+  with_items: "{{ devstack_stop_services }}"
+  loop_control:
+    loop_var: debian_stop_service
+    label: "debian_stop_service {{ debian_stop_service }}"

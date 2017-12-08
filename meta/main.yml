@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  author: victorock
+  description: DevStack
+  license: "license (BSD, MIT)"
+  min_ansible_version: 2.4
+  platforms:
+    - name: CENTOS
+      versions:
+        - 6
+        - 7
+    - name: EL
+      versions:
+        - 6
+        - 7
+  galaxy_tags:
+    - openstack
+    - devstack
+
+dependencies: []

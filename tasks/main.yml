@@ -1,0 +1,74 @@
+---
+- name: "ALL: Include ansible_os_family specific vars"
+  include_vars: "{{ os_family_var }}"
+  with_first_found:
+    - files: "{{ ansible_os_family }}.yml"
+      paths: vars
+      skip: true
+  loop_control:
+    loop_var: os_family_var
+
+- name: "ALL: Run ansible_os_family specific tasks"
+  include_tasks: "{{ os_family_task }}"
+  with_first_found:
+    - files: "{{ ansible_os_family }}.yml"
+      paths: tasks
+      skip: true
+  loop_control:
+    loop_var: os_family_task
+
+- name: "ALL: Allow running sudo without tty"
+  become: yes
+  lineinfile:
+    dest: /etc/sudoers
+    regexp: '^Defaults\s+requiretty'
+    line: 'Defaults !requiretty'
+
+- name: "ALL: Clean devstack_dir"
+  become: yes
+  file:
+    path: '{{ devstack_dir }}'
+    state: absent
+
+- name: "ALL: Clone devstack to devstack_dir"
+  git:
+    repo: 'https://github.com/openstack-dev/devstack.git'
+    dest: '{{ devstack_dir }}'
+    recursive: yes
+    force: yes
+    version: '{{ devstack_version }}'
+
+- name: "ALL: Create devstack_user"
+  become: yes
+  command: "{{ devstack_dir }}/tools/create-stack-user.sh"
+  environment:
+    STACK_USER: "{{ devstack_user }}"
+
+- name: "ALL: Change ownerships of git repo to devstack_user"
+  become: yes
+  file:
+    path: '{{ devstack_dir }}'
+    owner: '{{ devstack_user }}'
+    group: '{{ devstack_user }}'
+    recurse: true
+
+- name: "ALL: Generate openstack config based on jinj2 template"
+  become: yes
+  become_user: "{{ devstack_user }}"
+  template:
+    src: 'local.j2'
+    dest: '{{ devstack_dir }}/local.conf'
+
+- name: "ALL: Unstack as devstack_user"
+  become: yes
+  become_user: "{{ devstack_user }}"
+  shell: "{{ devstack_dir }}/unstack.sh || true"
+
+- name: "ALL: Stack as devstack_user"
+  become: yes
+  become_user: "{{ devstack_user }}"
+  shell: "{{ devstack_dir }}/stack.sh"
+  args:
+    executable: "/bin/bash"
+  async: 3600 # 1 hour
+  poll: 30

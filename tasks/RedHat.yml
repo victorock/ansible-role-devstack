@@ -1,0 +1,20 @@
+- name: "Redhat: Install dependencies"
+  become: yes
+  yum:
+    name: "{{ redhat_package }}"
+    state: installed
+    update_cache: yes
+  with_items: "{{ devstack_install_packages }}"
+  loop_control:
+    loop_var: redhat_package
+    label: "redhat_package {{ redhat_package }}"
+
+- name: "Redhat: Stop unecessary services"
+  become: yes
+  service:
+    name: "{{ redhat_stop_service }}"
+    state: 'stopped'
+  with_items: "{{ devstack_stop_services }}"
+  loop_control:
+    loop_var: redhat_stop_service
+    label: "redhat_stop_service {{ redhat_stop_service }}"
